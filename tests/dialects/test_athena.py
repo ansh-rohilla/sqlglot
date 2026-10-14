@@ -11,6 +11,9 @@ class TestAthena(Validator):
     def test_athena(self):
         self.validate_identity(r"SELECT '\d+'")
         self.validate_identity("SELECT 'foo''bar'")
+        self.validate_identity(r"SELECT '\'")
+        self.validate_identity(r"SELECT 'C:\path\'")
+        self.validate_identity(r"SELECT * FROM t WHERE name LIKE 'QA3\_%' ESCAPE '\'")
         self.validate_identity(
             "CREATE TABLE IF NOT EXISTS t (name STRING) LOCATION 's3://bucket/tmp/mytable/' TBLPROPERTIES ('table_type'='iceberg', 'FORMAT'='parquet')"
         )
@@ -79,6 +82,10 @@ class TestAthena(Validator):
         )
         self.validate_identity(
             r"CREATE EXTERNAL TABLE my_table (id BIGINT COMMENT 'this is the row\'s id') LOCATION 's3://my-s3-bucket'"
+        )
+        self.validate_identity(
+            r'CREATE EXTERNAL TABLE foo (bar STRING) COMMENT "a\"b"',
+            r"""CREATE EXTERNAL TABLE foo (bar STRING) COMMENT 'a"b'""",
         )
         self.validate_identity(
             "CREATE EXTERNAL TABLE foo (id INT, val STRING) CLUSTERED BY (id, val) INTO 10 BUCKETS"

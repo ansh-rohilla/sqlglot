@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from sqlglot import tokens
 from sqlglot.dialects.dialect import DialectType
+from sqlglot.dialects.hive import Hive
+from sqlglot.dialects.trino import Trino
+from sqlglot.errors import TokenError
 from sqlglot.generators.athena import AthenaGenerator
 from sqlglot.parsers.athena import AthenaParser
-from sqlglot.tokens import TokenType, Token
-from sqlglot.dialects.trino import Trino
-from sqlglot.dialects.hive import Hive
+from sqlglot.tokens import Token, TokenType
 
 
 class Athena(Trino):
@@ -74,7 +75,24 @@ class Athena(Trino):
             self._trino_tokenizer = _TrinoTokenizer(Trino())
 
         def tokenize(self, sql: str) -> list[Token]:
-            tokens = super().tokenize(sql)
+            try:
+                tokens = super().tokenize(sql)
+            except TokenError as error:
+                try:
+                    tokens = self._trino_tokenizer.tokenize(sql)
+                    if not _tokenize_as_hive(tokens):
+                        return tokens
+                except TokenError:
+                    pass
+
+                try:
+                    tokens = self._hive_tokenizer.tokenize(sql)
+                    if _tokenize_as_hive(tokens):
+                        return [Token(TokenType.HIVE_TOKEN_STREAM, "")] + tokens
+                except TokenError:
+                    pass
+
+                raise error
 
             if _tokenize_as_hive(tokens):
                 return [Token(TokenType.HIVE_TOKEN_STREAM, "")] + self._hive_tokenizer.tokenize(sql)
