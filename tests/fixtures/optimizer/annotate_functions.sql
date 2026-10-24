@@ -7686,6 +7686,74 @@ CORR(tbl.float_col, tbl.int_col);
 FLOAT64;
 
 --------------------------------------
+-- SQLite
+--------------------------------------
+
+# dialect: sqlite
+HEX(tbl.str_col);
+VARCHAR;
+
+# dialect: sqlite
+UNHEX(tbl.str_col);
+BLOB;
+
+# dialect: sqlite
+JULIANDAY('now');
+DOUBLE;
+
+# dialect: sqlite
+UNIXEPOCH('now');
+BIGINT;
+
+# dialect: sqlite
+DATETIME('now');
+VARCHAR;
+
+# dialect: sqlite
+TIME('now');
+VARCHAR;
+
+# dialect: sqlite
+DATE('now');
+VARCHAR;
+
+# dialect: sqlite
+TOTAL(tbl.int_col);
+DOUBLE;
+
+# dialect: sqlite
+ZEROBLOB(10);
+BLOB;
+
+# dialect: sqlite
+RANDOM();
+BIGINT;
+
+# dialect: sqlite
+CHANGES();
+BIGINT;
+
+# dialect: sqlite
+TOTAL_CHANGES();
+BIGINT;
+
+# dialect: sqlite
+LAST_INSERT_ROWID();
+BIGINT;
+
+# dialect: sqlite
+TYPEOF(tbl.int_col);
+VARCHAR;
+
+# dialect: sqlite
+UNICODE(tbl.str_col);
+INT;
+
+# dialect: sqlite
+LIKELY(tbl.int_col);
+INT;
+
+--------------------------------------
 -- IGNORE NULLS / RESPECT NULLS
 --------------------------------------
 
