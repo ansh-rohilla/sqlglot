@@ -312,6 +312,30 @@ class TestDuckDB(Validator):
             },
         )
         self.validate_all(
+            "SELECT CAST(JSON('[1, 2]') AS JSON[])",
+            read={
+                "snowflake": "SELECT PARSE_JSON('[1, 2]')::ARRAY",
+            },
+        )
+        self.validate_all(
+            """SELECT CAST(JSON('{"a": 1}') AS JSON)""",
+            read={
+                "snowflake": """SELECT PARSE_JSON('{"a": 1}')::OBJECT""",
+            },
+        )
+        self.validate_all(
+            "CAST(x AS JSON[])",
+            read={
+                "snowflake": "CAST(x AS ARRAY)",
+            },
+        )
+        self.validate_all(
+            "CAST(x AS JSON)",
+            read={
+                "snowflake": "CAST(x AS OBJECT)",
+            },
+        )
+        self.validate_all(
             "SELECT straight_join",
             write={
                 "duckdb": "SELECT straight_join",
