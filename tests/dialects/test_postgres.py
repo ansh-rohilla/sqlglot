@@ -1,4 +1,4 @@
-from sqlglot import ParseError, UnsupportedError, exp, parse_one, transpile
+from sqlglot import ErrorLevel, ParseError, UnsupportedError, exp, parse_one, transpile
 from sqlglot.generator import logger as generator_logger
 from sqlglot.helper import logger as helper_logger
 from sqlglot.optimizer.annotate_types import annotate_types
@@ -904,6 +904,19 @@ FROM json_data, field_ids""",
                 "redshift": UnsupportedError,
             },
         )
+        with self.assertRaises(UnsupportedError):
+            transpile(
+                "SELECT * EXCEPT (a) FROM t",
+                read="bigquery",
+                write="postgres",
+                unsupported_level=ErrorLevel.RAISE,
+            )
+        with self.assertLogs(generator_logger, level="WARNING") as cm:
+            self.assertEqual(
+                transpile("SELECT * EXCEPT (a) FROM t", read="bigquery", write="postgres")[0],
+                "SELECT * FROM t",
+            )
+        self.assertIn("Star exclusion is not supported for Postgres", cm.output[0])
         self.validate_all(
             "SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY amount)",
             write={

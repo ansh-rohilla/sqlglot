@@ -3640,7 +3640,17 @@ class Generator:
 
     def star_sql(self, expression: exp.Star) -> str:
         except_ = self.expressions(expression, key="except_", flat=True)
-        except_ = f"{self.seg(self.STAR_EXCEPT)} ({except_})" if except_ else ""
+        if except_:
+            if not self.STAR_EXCEPT:
+                self.unsupported(
+                    f"Star exclusion is not supported for {self.dialect.__class__.__name__}"
+                )
+                except_ = ""
+            else:
+                except_ = f"{self.seg(self.STAR_EXCEPT)} ({except_})"
+        else:
+            except_ = ""
+
         replace = self.expressions(expression, key="replace", flat=True)
         replace = f"{self.seg('REPLACE')} ({replace})" if replace else ""
         rename = self.expressions(expression, key="rename", flat=True)

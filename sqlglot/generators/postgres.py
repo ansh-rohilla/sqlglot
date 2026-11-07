@@ -298,6 +298,7 @@ class PostgresGenerator(generator.Generator):
     CAN_IMPLEMENT_ARRAY_ANY = True
     SUPPORTS_WINDOW_EXCLUDE = True
     COPY_HAS_INTO_KEYWORD = False
+    STAR_EXCEPT = None
     ARRAY_CONCAT_IS_VAR_LEN = False
     SUPPORTS_MEDIAN = False
     ARRAY_SIZE_DIM_REQUIRED: bool | None = True
