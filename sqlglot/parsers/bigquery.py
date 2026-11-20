@@ -366,6 +366,18 @@ class BigQueryParser(parser.Parser):
         TokenType.TABLE,
     }
 
+    LAMBDAS: t.ClassVar = {
+        **parser.Parser.LAMBDAS,
+        TokenType.FARROW: lambda self, expressions: self.expression(
+            exp.Kwarg(
+                this=exp.var(expressions[0].name),
+                expression=self._parse_table_arg()
+                or self._parse_disjunction()
+                or self._parse_select(),
+            )
+        ),
+    }
+
     PROPERTY_PARSERS: t.ClassVar = {
         **parser.Parser.PROPERTY_PARSERS,
         "OPTIONS": lambda self: self._parse_with_property(),
@@ -816,3 +828,25 @@ class BigQueryParser(parser.Parser):
                     this = self.expression(exp.Dot(this=this.this, expression=parsed))
 
         return this
+
+    def _parse_table_arg(self) -> exp.Table | None:
+        index = self._index
+        if self._match(TokenType.TABLE):
+            if self._curr and (
+                self._curr.token_type in self.ID_VAR_TOKENS
+                or self._curr.token_type in (TokenType.STRING, TokenType.NUMBER)
+            ):
+                table = self._parse_table()
+                if (
+                    table
+                    and self._curr
+                    and self._curr.token_type in (TokenType.COMMA, TokenType.R_PAREN)
+                ):
+                    return table
+
+            self._retreat(index)
+
+        return None
+
+    def _parse_function_args(self, alias: bool = False) -> list[exp.Expr]:
+        return self._parse_csv(lambda: self._parse_table_arg() or self._parse_lambda(alias=alias))

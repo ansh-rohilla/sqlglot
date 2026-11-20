@@ -1007,3 +1007,19 @@ class BigQueryGenerator(generator.Generator):
             self.unsupported(f"Unsupported CLUSTER BY {self.sql(expression, 'this')}")
             return ""
         return self.op_expressions("CLUSTER BY", expression)
+
+    def anonymous_sql(self, expression: exp.Anonymous) -> str:
+        parent = expression.parent
+        is_qualified = isinstance(parent, exp.Dot) and expression is parent.expression
+
+        args = [
+            f"TABLE {self.sql(e)}" if isinstance(e, exp.Table) else self.sql(e)
+            for e in expression.expressions
+            if e is not None
+        ]
+        return self.func(self.sql(expression, "this"), *args, normalize=not is_qualified)
+
+    def kwarg_sql(self, expression: exp.Kwarg) -> str:
+        if isinstance(expression.expression, exp.Table):
+            return f"{self.sql(expression, 'this')} => TABLE {self.sql(expression, 'expression')}"
+        return super().kwarg_sql(expression)

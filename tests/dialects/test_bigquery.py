@@ -2907,6 +2907,13 @@ OPTIONS (
             """SELECT AI.GENERATE('Write a haiku', endpoint => 'gemini-2.5-flash', model_params => JSON '{"generationConfig": {"temperature": 0}}')"""
         )
 
+        self.validate_identity("SELECT * FROM mydataset.f(TABLE mydataset.my_table)")
+        self.validate_identity("WITH t AS (SELECT 1 AS x) SELECT * FROM mydataset.f(TABLE t)")
+        self.validate_identity("SELECT * FROM mydataset.f(1950, TABLE mydataset.my_table)")
+        self.validate_identity("SELECT * FROM mydataset.f(tbl => TABLE my_table)")
+        self.validate_identity("SELECT * FROM mydataset.f(table)")
+        self.validate_identity("SELECT * FROM mydataset.f(TABLE table)")
+
     def test_merge(self):
         self.validate_all(
             """
